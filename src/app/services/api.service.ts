@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environment/environment';
 
@@ -51,11 +51,12 @@ export class ApiService {
     return this.http.post<any>(`${this.baseUrl}/account/deposit`, body);
   }
 
-  fundTransfer(amount: string, pin: string, targetAccountNumber: number): Observable<any> {
+  fundTransfer(amount: string, pin: string, targetAccountNumber: number, category: string): Observable<any> {
     const body = {
       amount: amount,
       pin: pin,
-      targetAccountNumber: targetAccountNumber
+      targetAccountNumber: targetAccountNumber,
+      category: category
     };
     return this.http.post<any>(`${this.baseUrl}/account/fund-transfer`, body);
   }
@@ -66,5 +67,13 @@ export class ApiService {
 
   getAccountDetails(): Observable<any> {
     return this.http.get<any>(`${this.baseUrl}/dashboard/account`);
+  }
+
+  getExpenseStatistics(year?: number): Observable<any> {
+    let params = new HttpParams();
+    if (year) {
+      params = params.set('year', year.toString());
+    }
+    return this.http.get<any>(`${this.baseUrl}/account/expense-statistics`, { params });
   }
 }

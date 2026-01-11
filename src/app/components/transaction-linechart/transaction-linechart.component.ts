@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, ViewChild } from '@angular/core';
+import { Component, Input, OnInit, OnChanges, SimpleChanges, ViewChild, AfterViewInit } from '@angular/core';
 import { ChartConfiguration } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import { TransactionComponent } from '../transaction/transaction.component';
@@ -8,7 +8,7 @@ import { TransactionComponent } from '../transaction/transaction.component';
   templateUrl: './transaction-linechart.component.html',
   styleUrls: ['./transaction-linechart.component.css'],
 })
-export class TransactionLinechartComponent implements OnInit {
+export class TransactionLinechartComponent implements OnInit, OnChanges, AfterViewInit {
   @Input() transactions: TransactionComponent[] = [];
   @ViewChild(BaseChartDirective) chart?: BaseChartDirective;
 
@@ -56,18 +56,50 @@ export class TransactionLinechartComponent implements OnInit {
   constructor() {}
 
   ngOnInit(): void {
-    this.updateChart();
-    this.initializeYearAndMonthLists();
+    if (this.transactions.length > 0) {
+      this.initializeYearAndMonthLists();
+    }
+  }
+
+  ngAfterViewInit(): void {
+    // Update chart after view is initialized if transactions are available
+    if (this.transactions && this.transactions.length > 0) {
+      setTimeout(() => {
+        this.initializeYearAndMonthLists();
+        this.updateChart();
+      }, 100);
+    }
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['transactions']) {
+      if (this.transactions && this.transactions.length > 0) {
+        this.initializeYearAndMonthLists();
+        // Use setTimeout to ensure the view is ready
+        setTimeout(() => {
+          this.updateChart();
+        }, 0);
+      } else {
+        // Clear chart data if no transactions
+        this.lineChartData.labels = [];
+        this.lineChartData.datasets.forEach(dataset => dataset.data = []);
+        if (this.chart) {
+          this.chart.update();
+        }
+      }
+    }
   }
 
   initializeYearAndMonthLists() {
-    this.years = Array.from(
-      new Set(
-        this.transactions.map((transaction: TransactionComponent) =>
-          new Date(transaction.transactionDate).getFullYear()
+    if (this.transactions.length > 0) {
+      this.years = Array.from(
+        new Set(
+          this.transactions.map((transaction: TransactionComponent) =>
+            new Date(transaction.transactionDate).getFullYear()
+          )
         )
-      )
-    );
+      );
+    }
   }
 
   /**
@@ -160,6 +192,9 @@ export class TransactionLinechartComponent implements OnInit {
         group.amounts.CASH_CREDIT
     );
 
-    this.chart?.update();
+    // Force chart update
+    if (this.chart) {
+      this.chart.update();
+    }
   }
 }

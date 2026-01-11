@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, ViewChild } from '@angular/core';
+import { Component, Input, OnInit, OnChanges, SimpleChanges, ViewChild, AfterViewInit } from '@angular/core';
 import { ChartConfiguration } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import { TransactionComponent } from '../transaction/transaction.component';
@@ -8,7 +8,7 @@ import { TransactionComponent } from '../transaction/transaction.component';
   templateUrl: './daily-transaction-piechart.component.html',
   styleUrls: ['./daily-transaction-piechart.component.css'],
 })
-export class DailyTransactionPiechartComponent implements OnInit {
+export class DailyTransactionPiechartComponent implements OnInit, OnChanges, AfterViewInit {
   @Input() transactions: TransactionComponent[] = [];
   @ViewChild(BaseChartDirective) chart?: BaseChartDirective;
 
@@ -41,8 +41,33 @@ export class DailyTransactionPiechartComponent implements OnInit {
     const year = currentDate.getFullYear();
 
     this.selectedDate = `${year}-${month}-${day}`;
+  }
 
-    this.updateChart();
+  ngAfterViewInit(): void {
+    // Update chart after view is initialized if transactions are available
+    if (this.transactions && this.transactions.length > 0) {
+      setTimeout(() => {
+        this.updateChart();
+      }, 100);
+    }
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['transactions']) {
+      if (this.transactions && this.transactions.length > 0) {
+        // Use setTimeout to ensure the view is ready
+        setTimeout(() => {
+          this.updateChart();
+        }, 0);
+      } else {
+        // Clear chart data if no transactions
+        this.pieChartData.labels = [];
+        this.pieChartData.datasets[0].data = [];
+        if (this.chart) {
+          this.chart.update();
+        }
+      }
+    }
   }
 
   updateChart() {
@@ -85,6 +110,9 @@ export class DailyTransactionPiechartComponent implements OnInit {
     this.pieChartData.labels = Object.keys(typeData);
     this.pieChartData.datasets[0].data = Object.values(typeData);
 
-    this.chart?.update();
+    // Force chart update
+    if (this.chart) {
+      this.chart.update();
+    }
   }
 }

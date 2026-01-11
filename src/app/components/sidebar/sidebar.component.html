@@ -109,6 +109,45 @@
             >
           </a>
         </li>
+        <li class="mb-5">
+          <a
+            routerLinkActive="active-link"
+            routerLink="/account/expense-management"
+            class="sidebar-link inline-flex items-center gap-4 w-full text-normal font-semibold text-gray-300 transition-colors duration-150"
+          >
+            <i class="fas fa-chart-line"></i>
+
+            <span [ngClass]="{ 'hide-logo': !sidebarVisible }"
+              >Quản lý chi tiêu</span
+            >
+          </a>
+        </li>
+        <li class="mb-5">
+          <a
+            routerLinkActive="active-link"
+            routerLink="/account/budget-management"
+            class="sidebar-link inline-flex items-center gap-4 w-full text-normal font-semibold text-gray-300 transition-colors duration-150"
+          >
+            <i class="fas fa-wallet"></i>
+
+            <span [ngClass]="{ 'hide-logo': !sidebarVisible }"
+              >Quản lý ngân sách</span
+            >
+          </a>
+        </li>
+        <li class="mb-5">
+          <a
+            routerLinkActive="active-link"
+            routerLink="/account/expense-categories"
+            class="sidebar-link inline-flex items-center gap-4 w-full text-normal font-semibold text-gray-300 transition-colors duration-150"
+          >
+            <i class="fas fa-tags"></i>
+
+            <span [ngClass]="{ 'hide-logo': !sidebarVisible }"
+              >Danh mục chi tiêu</span
+            >
+          </a>
+        </li>
       </ul>
     </nav>
   </div>

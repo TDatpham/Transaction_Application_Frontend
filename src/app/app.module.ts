@@ -18,6 +18,7 @@ import { AppComponent } from './app.component';
 import { AuthInterceptor } from './auth.interceptor';
 import { AccountPinComponent } from './components/account-pin/account-pin.component';
 import { AccountdetailcardComponent } from './components/accountdetailcard/accountdetailcard.component';
+import { DailyTransactionChartComponent } from './components/daily-transaction-chart/daily-transaction-chart.component';
 import { DailyTransactionPiechartComponent } from './components/daily-transaction-piechart/daily-transaction-piechart.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { DepositComponent } from './components/deposit/deposit.component';
@@ -35,6 +36,7 @@ import { ProfileComponent } from './components/profile/profile.component';
 import { RegisterComponent } from './components/register/register.component';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { TransactionHistoryComponent } from './components/transaction-history/transaction-history.component';
+import { TransactionChartComponent } from './components/transaction-chart/transaction-chart.component';
 import { TransactionLinechartComponent } from './components/transaction-linechart/transaction-linechart.component';
 import { TransactionComponent } from './components/transaction/transaction.component';
 import { UserprofilecardComponent } from './components/userprofilecard/userprofilecard.component';
@@ -44,6 +46,10 @@ import { AuthService } from './services/auth.service';
 import { LoadermodelService } from './services/loadermodel.service';
 import { NgOtpInputModule } from 'ng-otp-input';
 import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
+import { ExpenseManagementComponent } from './components/expense-management/expense-management.component';
+import { NotificationComponent } from './components/notification/notification.component';
+import { BudgetManagementComponent } from './components/budget-management/budget-management.component';
+import { ExpenseCategoriesComponent } from './components/expense-categories/expense-categories.component';
 
 @NgModule({
   declarations: [
@@ -66,12 +72,18 @@ import { ResetPasswordComponent } from './components/reset-password/reset-passwo
     LoaderComponent,
     NotfoundpageComponent,
     ProfileComponent,
+    TransactionChartComponent,
     TransactionLinechartComponent,
+    DailyTransactionChartComponent,
     DailyTransactionPiechartComponent,
     TransactionComponent,
     MonthlyTransactionChartComponent,
     DonwloadtransactionsComponent,
-    ResetPasswordComponent
+    ResetPasswordComponent,
+    ExpenseManagementComponent,
+    NotificationComponent,
+    BudgetManagementComponent,
+    ExpenseCategoriesComponent
   ],
   imports: [
     RouterModule,

@@ -19,6 +19,9 @@ import { OtpComponent } from './components/otp/otp.component';
 import { NotfoundpageComponent } from './components/notfoundpage/notfoundpage.component';
 import { ProfileComponent } from './components/profile/profile.component';
 import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
+import { ExpenseManagementComponent } from './components/expense-management/expense-management.component';
+import { BudgetManagementComponent } from './components/budget-management/budget-management.component';
+import { ExpenseCategoriesComponent } from './components/expense-categories/expense-categories.component';
 
 const routes: Routes = [
   { path: '', component: HomeComponent, pathMatch: 'full' }, // Root route (HomeComponent) without AuthGuard
@@ -30,6 +33,9 @@ const routes: Routes = [
   { path: 'account', component: AccountdetailcardComponent, canActivate: [AuthGuard] },
   { path: 'user/profile', component: ProfileComponent, canActivate: [AuthGuard] },
   { path: 'account/transaction-history', component: TransactionHistoryComponent, canActivate: [AuthGuard] },
+  { path: 'account/expense-management', component: ExpenseManagementComponent, canActivate: [AuthGuard] },
+  { path: 'account/budget-management', component: BudgetManagementComponent, canActivate: [AuthGuard] },
+  { path: 'account/expense-categories', component: ExpenseCategoriesComponent, canActivate: [AuthGuard] },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'login/otp', component: OtpComponent },

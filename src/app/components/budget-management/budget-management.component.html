@@ -1,0 +1,208 @@
+<div class="coverparentspace p-4">
+  <div class="mb-6 flex items-center justify-between">
+    <h1 class="text-3xl font-bold text-gray-800">Quản lý ngân sách</h1>
+    <button
+      (click)="openAddModal()"
+      class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-2"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+      </svg>
+      Thêm ngân sách
+    </button>
+  </div>
+
+  <!-- Budget Alerts -->
+  <div *ngIf="alerts.length > 0" class="mb-6">
+    <h2 class="text-xl font-semibold text-gray-700 mb-4">Cảnh báo ngân sách</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div
+        *ngFor="let alert of alerts"
+        class="p-4 rounded-lg border-2"
+        [ngClass]="getAlertStatusClass(alert.status)"
+      >
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="font-semibold">{{ alert.categoryName }}</h3>
+            <p class="text-sm mt-1">
+              Đã chi: {{ formatCurrency(alert.spentAmount) }} / {{ formatCurrency(alert.budgetAmount) }}
+            </p>
+            <div class="mt-2 w-full bg-gray-200 rounded-full h-2">
+              <div
+                class="h-2 rounded-full"
+                [ngClass]="alert.status === 'exceeded' ? 'bg-red-600' : 'bg-yellow-500'"
+                [style.width.%]="getPercentageWidth(alert.percentage)"
+              ></div>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="text-lg font-bold">{{ alert.percentage.toFixed(0) }}%</p>
+            <p class="text-xs">{{ alert.status === 'exceeded' ? 'Vượt quá' : 'Cảnh báo' }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Budgets List -->
+  <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Danh mục</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số tiền</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Chu kỳ</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngưỡng cảnh báo</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <tr *ngFor="let budget of budgets" class="hover:bg-gray-50">
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm font-medium text-gray-900">{{ budget.categoryName }}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm text-gray-900">{{ formatCurrency(budget.amount) }}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm text-gray-500">{{ getPeriodLabel(budget.period) }}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm text-gray-500">{{ budget.alertThreshold }}%</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span
+                class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                [ngClass]="budget.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'"
+              >
+                {{ budget.isActive ? 'Hoạt động' : 'Tạm dừng' }}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+              <button
+                (click)="toggleBudgetActive(budget)"
+                class="text-indigo-600 hover:text-indigo-900 mr-3"
+              >
+                {{ budget.isActive ? 'Tạm dừng' : 'Kích hoạt' }}
+              </button>
+              <button
+                (click)="openEditModal(budget)"
+                class="text-blue-600 hover:text-blue-900 mr-3"
+              >
+                Sửa
+              </button>
+              <button
+                (click)="deleteBudget(budget.id!)"
+                class="text-red-600 hover:text-red-900"
+              >
+                Xóa
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="budgets.length === 0">
+            <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+              Chưa có ngân sách nào. Hãy thêm ngân sách mới!
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Add/Edit Modal -->
+  <div
+    *ngIf="showAddModal"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    (click)="closeModal()"
+  >
+    <div
+      class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h2 class="text-xl font-semibold text-gray-800">
+          {{ editingBudget ? 'Sửa ngân sách' : 'Thêm ngân sách mới' }}
+        </h2>
+      </div>
+
+      <div class="px-6 py-4 space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Danh mục</label>
+          <select
+            [(ngModel)]="formData.categoryId"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500"
+            [disabled]="!!editingBudget"
+          >
+            <option value="">Chọn danh mục</option>
+            <option *ngFor="let category of categories" [value]="category.id">
+              {{ category.name }}
+            </option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Số tiền (VND)</label>
+          <input
+            type="number"
+            [(ngModel)]="formData.amount"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500"
+            placeholder="Nhập số tiền"
+            min="0"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Chu kỳ</label>
+          <select
+            [(ngModel)]="formData.period"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500"
+          >
+            <option *ngFor="let period of periods" [value]="period.value">
+              {{ period.label }}
+            </option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Ngưỡng cảnh báo (%)</label>
+          <input
+            type="number"
+            [(ngModel)]="formData.alertThreshold"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500"
+            placeholder="80"
+            min="0"
+            max="100"
+          />
+          <p class="text-xs text-gray-500 mt-1">Cảnh báo khi đạt % ngân sách</p>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Ngày bắt đầu</label>
+          <input
+            type="date"
+            [(ngModel)]="startDateString"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500"
+          />
+        </div>
+      </div>
+
+      <div class="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
+        <button
+          (click)="closeModal()"
+          class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+        >
+          Hủy
+        </button>
+        <button
+          (click)="saveBudget()"
+          class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+        >
+          {{ editingBudget ? 'Cập nhật' : 'Tạo' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+

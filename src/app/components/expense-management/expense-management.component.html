@@ -1,0 +1,183 @@
+<div class="coverparentspace p-4">
+  <div class="mb-6">
+    <h1 class="text-3xl font-bold text-gray-800 mb-4">Quản lý và thống kê chi tiêu</h1>
+    
+    <div class="flex items-center gap-4 mb-4">
+      <label for="yearSelect" class="text-lg font-semibold text-gray-700">Chọn năm:</label>
+      <select
+        id="yearSelect"
+        [(ngModel)]="selectedYear"
+        (change)="onYearChange()"
+        class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500 bg-white"
+      >
+        <option *ngFor="let year of availableYears" [value]="year">{{ year }}</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Category Summary Cards -->
+  <div *ngIf="statistics && hasCategoryData()" class="mb-6">
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">Tổng quan giao dịch theo danh mục</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+      <div *ngFor="let item of getTopCategories(6)" class="bg-white rounded-lg shadow-lg p-6 border-l-4" [style.border-left-color]="item.category.color">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-lg font-semibold text-gray-700 flex items-center gap-2">
+            <span class="text-2xl">{{ item.category.icon }}</span>
+            <span>{{ item.category.name }}</span>
+          </h3>
+        </div>
+        <p class="text-2xl font-bold" [style.color]="item.category.color">
+          {{ formatCurrency(item.amount) }}
+        </p>
+        <p class="text-sm text-gray-500 mt-1" *ngIf="getTotalCategoryAmount() > 0">
+          {{ (item.amount / getTotalCategoryAmount() * 100).toFixed(1) }}% tổng giao dịch
+        </p>
+      </div>
+    </div>
+    
+    <!-- Total Card -->
+    <div class="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg shadow-lg p-6 text-white mb-6">
+      <h3 class="text-lg font-semibold mb-2">Tổng số tiền giao dịch theo danh mục</h3>
+      <p class="text-3xl font-bold">{{ formatCurrency(getTotalCategoryAmount()) }}</p>
+    </div>
+  </div>
+
+  <!-- No Category Data Message -->
+  <div *ngIf="statistics && !hasCategoryData()" class="bg-yellow-50 border-l-4 border-yellow-400 p-6 rounded-lg mb-6">
+    <div class="flex">
+      <div class="ml-3">
+        <h3 class="text-lg font-semibold text-yellow-800">Chưa có dữ liệu giao dịch theo danh mục</h3>
+        <p class="mt-2 text-sm text-yellow-700">Thực hiện các giao dịch với danh mục để xem thống kê tại đây.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="text-center py-12">
+    <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
+    <p class="mt-4 text-gray-600">Đang tải dữ liệu...</p>
+  </div>
+
+  <!-- Charts -->
+  <div *ngIf="!isLoading && statistics">
+    <!-- Pie Chart Overview and Category Chart Side by Side -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <!-- Pie Chart Overview -->
+      <div class="bg-white rounded-lg shadow-lg p-6">
+        <canvas
+          baseChart
+          [data]="pieChartData"
+          [options]="pieChartOptions"
+          [type]="pieChartType"
+          class="w-full h-64"
+        ></canvas>
+      </div>
+
+      <!-- Category Chart -->
+      <div class="bg-white rounded-lg shadow-lg p-6" *ngIf="hasCategoryData()">
+        <canvas
+          baseChart
+          [data]="categoryChartData"
+          [options]="categoryChartOptions"
+          [type]="categoryChartType"
+          class="w-full h-64"
+        ></canvas>
+      </div>
+    </div>
+
+    <!-- Monthly Bar Chart -->
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+      <canvas
+        baseChart
+        [data]="monthlyBarChartData"
+        [options]="monthlyBarChartOptions"
+        [type]="monthlyBarChartType"
+        class="w-full h-64"
+      ></canvas>
+    </div>
+
+    <!-- Daily and Weekly Charts Side by Side -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <!-- Daily Line Chart -->
+      <div class="bg-white rounded-lg shadow-lg p-6">
+        <canvas
+          baseChart
+          [data]="dailyLineChartData"
+          [options]="dailyLineChartOptions"
+          [type]="dailyLineChartType"
+          class="w-full h-64"
+        ></canvas>
+      </div>
+
+      <!-- Weekly Line Chart -->
+      <div class="bg-white rounded-lg shadow-lg p-6">
+        <canvas
+          baseChart
+          [data]="weeklyLineChartData"
+          [options]="weeklyLineChartOptions"
+          [type]="weeklyLineChartType"
+          class="w-full h-64"
+        ></canvas>
+      </div>
+    </div>
+
+    <!-- Category Details Table -->
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-6" *ngIf="hasCategoryData()">
+      <h3 class="text-xl font-semibold text-gray-800 mb-4">Chi tiết theo danh mục</h3>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Danh mục</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tổng giao dịch</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tỷ lệ</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr *ngFor="let entry of getCategoryEntries()" class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ getCategoryName(entry.key) }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-red-600">{{ formatCurrency(entry.value) }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                {{ getTotalCategoryAmount() > 0 ? (entry.value / getTotalCategoryAmount() * 100).toFixed(1) : '0' }}%
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Monthly Category Details Table -->
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-6" *ngIf="hasCategoryData()">
+      <h3 class="text-xl font-semibold text-gray-800 mb-4">Giao dịch theo danh mục theo tháng</h3>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tháng</th>
+              <th *ngFor="let cat of getTopCategories(5)" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {{ cat.category.icon }} {{ cat.category.name }}
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tổng</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr *ngFor="let month of statistics.monthlyData" class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ month.month }} {{ month.year }}</td>
+              <td *ngFor="let cat of getTopCategories(5)" class="px-6 py-4 whitespace-nowrap text-sm" [style.color]="cat.category.color">
+                {{ formatCurrency(month.categoryData && month.categoryData[cat.category.id] ? month.categoryData[cat.category.id] : 0) }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+                {{ formatCurrency(getMonthlyCategoryTotal(month)) }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- No Data State -->
+  <div *ngIf="!isLoading && !statistics" class="text-center py-12 bg-white rounded-lg shadow-lg">
+    <p class="text-gray-600 text-lg">Không có dữ liệu để hiển thị</p>
+  </div>
+</div>
